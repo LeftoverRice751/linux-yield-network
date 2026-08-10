@@ -32,7 +32,7 @@ set -u
 # This is the folder that holds the whole PressPoint project.
 # TWEAK THIS if you ever move the project somewhere else, for example to
 # "/home/$USER/presspoint" or "/var/www/presspoint".
-PROJECT_DIR="/home/$USER/Downloads/presspoint"
+PROJECT_DIR="/your/project/directory"
 
 # --- THE PYTHON "TOOLBOX" ----------------------------------------------------
 # A virtual environment ("venv") is a private toolbox of Python programs that
@@ -44,7 +44,7 @@ VENV_ACTIVATE="$PROJECT_DIR/venv/bin/activate"
 # We call gunicorn by its FULL path from inside the toolbox. This matters:
 # if we just typed "gunicorn" we might accidentally grab a different one that
 # is installed elsewhere on the computer, and it would fail in a confusing way.
-GUNICORN_BIN="$PROJECT_DIR/venv/bin/gunicorn"
+GUNICORN_BIN="$PROJECT_DIR/yourvenv/bin/gunicorn"
 
 # --- THE FRONT DOOR (the socket) ---------------------------------------------
 # A "socket" is a special file that works like a doorway. gunicorn sits behind
@@ -52,7 +52,7 @@ GUNICORN_BIN="$PROJECT_DIR/venv/bin/gunicorn"
 # TWEAK THIS only if you also change the matching line inside nginx's config at
 # /etc/nginx/sites-enabled/presspoint. The two names MUST match exactly, or
 # nginx will knock on a door that nobody is standing behind.
-SOCKET_NAME="presspoint.sock"
+SOCKET_NAME="yoursockfile.sock"
 SOCKET_PATH="$PROJECT_DIR/$SOCKET_NAME"
 
 # --- HOW MANY WORKERS? -------------------------------------------------------
@@ -95,12 +95,12 @@ NPM_SCRIPT="watch"
 #
 # TWEAK THIS only if you re-point the domain at a different tunnel in the
 # Cloudflare dashboard. The name below must match the dashboard EXACTLY.
-TUNNEL_NAME="presspoint-tunnel"
+TUNNEL_NAME="your-tunnel"
 
 # Where the tunnel should send visitors once they arrive. Port 80 is nginx,
 # which then passes them along to gunicorn through the socket door.
 # TWEAK THIS if nginx is ever moved to a different port, e.g. http://127.0.0.1:8080
-TUNNEL_TARGET_URL="http://127.0.0.1:80"
+TUNNEL_TARGET_URL="http://ur-url"
 
 # How the tunnel talks to Cloudflare. "http2" is the reliable choice here;
 # the default ("quic") uses UDP, which some Wi-Fi and hotspot connections block.
@@ -109,20 +109,20 @@ TUNNEL_PROTOCOL="http2"
 
 # The public web address, used only for the friendly message at the end.
 # TWEAK THIS if the domain changes.
-PUBLIC_URL="https://presspoint-gears.me"
+PUBLIC_URL="https://site-url"
 
 # --- THE NOTEBOOK AND THE DIARIES --------------------------------------------
 # When we start a program, Linux gives it an ID number (a "PID"). We write those
 # numbers into this notebook file so that later, option 2 knows exactly which
 # programs to switch off. Without it we'd be guessing.
-PID_FILE="/tmp/presspoint.pids"
+PID_FILE="/tmp/yourpids.pids"
 
 # Programs like to talk while they work. We send all that chatter into these
 # log files ("diaries") instead of the screen, so the menu stays clean. If
 # something breaks, these are the first place to look.
-LOG_NPM="/tmp/presspoint_npm.log"
-LOG_GUNICORN="/tmp/presspoint_gunicorn.log"
-LOG_TUNNEL="/tmp/presspoint_cloudflared.log"
+LOG_NPM="/tmp/your_npm.log"
+LOG_GUNICORN="/tmp/your_gunicorn.log"
+LOG_TUNNEL="/tmp/your_cloudflared.log"
 
 # How many seconds to wait for gunicorn to open its door before we assume it
 # has fallen over. TWEAK THIS higher on a slow computer.
