@@ -4,7 +4,6 @@
 █     ██  █ ██ █  █  ██      ██   ██  ███  █    █  █
 █     ██  █  █ █  █  ██      ██   ██  █    █    █  █
 ████ ████ █  █ ████ █  █     ██  ████ ████ ████ ███
-
 █  █ ████ ████ █  █ ████ ███  █  █
 ██ █ █     ██  █  █ █  █ █  █ █ █
 █ ██ ███   ██  █ ██ █  █ ███  ██
@@ -14,7 +13,7 @@
 
 # linux-yield-network
 
-**A broadcast desk for the PressPoint website.** Four programs, three keys, one screen.
+**A broadcast desk for the PressPoint website.** Four programs, four keys, one screen.
 
 PressPoint isn't one program. It's four that all have to be running at once, in the
 right order, or the site is dark:
@@ -48,6 +47,7 @@ Remembering that at 2am is nobody's idea of a good time. So: press `1`.
     1   start    bring the website online
     2   stop     take it offline and tidy up
     3   clone    copy this whole setup to another computer
+    4   logs     watch build, engine, tunnel and watchman live
     q   quit     leave this menu, keep the site running
 ```
 
@@ -58,6 +58,28 @@ the part the public can't reach.
 
 Quitting the desk doesn't stop the site. `q` closes the menu and walks away;
 whatever was running stays running.
+
+---
+
+## `1` — starting up, and the kiosk screen
+
+Pressing `1` does more than bring the site online. It also asks **which screen
+is showing the site** — this computer, or a remote one reached over SSH
+(Linux or Windows) — opens a browser there in kiosk mode (no address bar, no
+tabs, just the site), and then hands off to a background **watchman**.
+
+The watchman checks every few seconds that the public address is answering.
+If it isn't, the kiosk switches over to a **local** address instead — this
+computer talking straight to nginx, skipping Cloudflare — so the screen never
+just sits on an error page. It switches back automatically the moment the
+public address recovers. Everything it sees is timestamped and viewable live
+with `4`.
+
+The server itself never moves. Only the *kiosk screen's* location is
+selectable — the four programs above always run right here.
+
+Pressing `2` stops all of it — the server, the watchman, and the kiosk
+screen. Pressing `q` leaves all three running, same as it always has.
 
 ---
 
@@ -137,6 +159,11 @@ as `lyn.sh.new`. Bash reads a script as it runs it, so replacing the file
 underneath a running process makes it execute whatever fragment lands at that
 byte offset. Not today.
 
+**The kiosk browser is relaunched, not remote-controlled.** Switching between
+the public and local address kills the old browser window and opens a fresh
+one — a brief flash, in exchange for not needing to script a running browser
+over the DevTools protocol.
+
 ---
 
 ## One tunnel at a time ⚠
@@ -188,9 +215,13 @@ hanging in the middle of a copy.
 > **Smoothest first run:** give that account password-free `sudo`. Without it,
 > step 1 prints the commands to run by hand and carries on rather than stalling.
 
+If a kiosk screen is a *different* remote machine, the same `ssh-copy-id` step
+sets that one up too — the first time you press `1` and pick "add a new
+screen", it's remembered for next time.
+
 ### Requirements
 
-`bash` · `ssh` · `rsync` · `mysqldump` · Ubuntu 24.04 on both ends
+`bash` · `ssh` · `rsync` · `mysqldump` · `curl` · Ubuntu 24.04 on both ends
 
 ---
 
@@ -198,35 +229,43 @@ hanging in the middle of a copy.
 
 Everything you might reasonably want to change lives in **one settings box** at
 the top of `lyn.sh`, and every setting is marked `TWEAK THIS` with a note on when
-you'd want to. Project folder, worker count, tunnel name, the other computer's
-address — all of it. You shouldn't need to read past Section 2.
+you'd want to. Project folder, worker count, tunnel name, kiosk browser order,
+how often the watchman checks — all of it. You shouldn't need to read past
+Section 2.
 
 ---
 
 ## How it's built
 
-One file. No dependencies, no framework, no install step. ~1,900 lines of bash
+One file. No dependencies, no framework, no install step. ~2,500 lines of bash
 that are mostly *comments*, written for somebody who does not know Linux and
 should not have to.
 
 Send and receive move the same bytes between the same two machines — only the
 initiating end differs — so the copy is written **once**, in terms of `on_source`
-and `on_target`, and the direction decides which is which. Two copies of that
-logic would drift apart the first time either was fixed.
+and `on_target`, and the direction decides which is which. The kiosk feature's
+own SSH connection follows the same shape, just for a different job: reaching
+whichever machine is showing the site, whether that's this computer or not.
 
 ```
-Section 1   the settings box        ← the part you're allowed to change
-Section 2   helpers
-Section 3   preflight — do we have the tools?
-Section 4   use the right Node
-Section 5   option 1: start
-Section 6   option 2: stop
-Section 7   the live status board
-Section 8   the menu
-Section 9   talking to the other computer
-Section 10  option 3: clone
-Section 11  the main loop
+Section 1    the settings box        ← the part you're allowed to change
+Section 1B   health check & failover settings
+Section 2    helpers
+Section 3    preflight — do we have the tools?
+Section 4    use the right Node
+Section 5    option 1: start
+Section 6    option 2: stop
+Section 7    the live status board
+Section 8    the menu
+Section 9    talking to the other computer
+Section 9B   the kiosk screen
+Section 9C   the watchman
+Section 10   option 3: clone
+Section 11   the main loop
 ```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the fuller breakdown, kept up to
+date as features are added.
 
 ---
 
